@@ -33,7 +33,8 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             --bg-color: #ffffff;
             --text-color: #0c0c0c;
             --selection-bg: #B4D7FF;
-            --selection-color: black;
+            --selection-color: #0c0c0c;
+            --link-color: #888888;
         }
         
         @media (prefers-color-scheme: dark) {
@@ -72,14 +73,18 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             background: var(--bg-color);
             color: var(--text-color);
             transition: all .4s ease;
+            overflow: hidden;
         }
+        @media(max-height: 800px) { .body { overflow: auto } }
 
         .wrapper {
             display: flex;
             width: 100%; height: 100%;
             justify-content: start;
             align-items: center;
-            margin-top: calc(100vh / 6);
+            margin-top: calc(100vh / 12);
+            gap: calc(100vh / 12);
+            margin-bottom: 5px;
         }
 
         .container {
@@ -110,6 +115,7 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             width: 100%;
             background: linear-gradient(to bottom, transparent, var(--bg-color));
             pointer-events: none;
+            z-index: 15;
         }
 
         .lines-clip {
@@ -140,6 +146,7 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
         .line.start { transform: translateY(500px); transition: translateY 0s; }
         .line.started { transition: transform .8s ease, padding .2s; }
         .line:hover { padding: 10px 5px; }
+        .line.pick { transition: transform .4s ease, color 0s; transform: scale(50); background: var(--bg-color); color: transparent; z-index: 10; }
 
         .column {
             display: flex;
@@ -169,8 +176,36 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             font-family: 'Staatliches', sans-serif;            
             color: var(--text-color);
         }
+        .h6 {
+            font-size: medium;
+            font-weight: bold;
+            font-family: 'Staatliches', sans-serif;          
+            color: var(--text-color);
+        }
+
+        .mono { font-family: monospace; }
+        .gray { color: var(--link-color) }
 
         .i { font-style: italic; }
+        .center { text-align: center; }
+        .link {
+            text-decoration: underline;
+            color: var(--link-color);
+            font-family: monospace;
+        }
+
+        .page {
+            display: block; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; 
+            height: 100dvh; 
+            margin: 0; padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background .4s ease;
+            display: none;
+        }
     `); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sss];" id="style" tabindex="-1">
     </huh>
 </huh>
@@ -182,9 +217,15 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
 <!-- MAIN LAYOUT -->
 <huh class="body" ontouchstart>
     <huh class="wrapper column">
-        <huh class="h1" style="text-align: center;">KartofellFirsts website</huh>
+        <huh class="column">
+            <huh class="h1 center" onclick="window.open(`https://github.com/KartofellFirst`, `_blank`)">KartofellFirst's Personal Website</huh>
+            <huh class="center h6 mono gray" onclick="window.open(`https://github.com/KartofellFirst/huh`, `_blank`)">see the repo of this website (click)</huh>
+        </huh>
         <huh class="container">
-            <huh class="h2 start-fade-out">How did you get here?</huh>
+            <huh class="column">
+                <huh class="h2 start-fade-out">Lets build your tour together</huh>
+                <huh class="h6 start-fade-out">Why are you here?</huh>
+            </huh>
             <huh class="lines" ontouchstart>
                 <huh class="lines-clip column">
                     <huh class="line start">I'm here just to look at the website</huh>
@@ -196,7 +237,6 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
                     <huh class="line start">I love femboys</huh>
                     <huh class="line start">idk lol</huh>
                     <huh class="line start"><huh class="i">gooning</huh></huh>
-                    <huh class="line start">idk lol</huh>
                     <huh class="line start">idk lol</huh>
                     <huh class="line start">idk lol</huh>
                 </huh>
@@ -214,6 +254,10 @@ setTimeout(() => {
     document.querySelectorAll('.start-fade-out').forEach(el => el.classList.replace('start-fade-out', 'start-fade-in'));
     document.querySelectorAll('.start').forEach((el, i) => setTimeout(() => el.classList.replace('start', 'started'), 80 * i))
 }, 10);
+
+document.querySelectorAll('.line').forEach(el => el.addEventListener('click', function (e) {
+    
+}))
 
 
 " id="script" tabindex="-1" data-focused=false>
