@@ -194,18 +194,40 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             font-family: monospace;
         }
 
-        .page {
-            display: block; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100vw; 
-            height: 100dvh; 
-            margin: 0; padding: 0;
+        .next {
+            position: fixed;
+            bottom: 15px;
+            right: 10px;
+            width: 130px;
+            max-width: 90vw;
+            max-height: 30px;
+            overflow: hidden;
+            z-index: 25;
+            border: 1px solid var(--text-color);
+            padding: 2px 5px;
+            background: var(--bg-color);
+        }
+
+        .next .button {
             background: var(--bg-color);
             color: var(--text-color);
-            transition: background .4s ease;
-            display: none;
+            widht: 100%; height: 100%;
         }
+
+        .above {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100dvh;
+            z-index: 99;
+            background: #000000;
+            transition: all .3s ease-in-out;
+            opacity: 0.001;
+            pointer-events: none;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .above.show { pointer-events: all; opacity: 1;  }
     `); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sss];" id="style" tabindex="-1">
     </huh>
 </huh>
@@ -244,6 +266,16 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
     </huh>
 </huh>
 
+<!-- floating "next" button -->
+<huh class="next">
+    <huh class="button" onclick="window.dispatchEvent(new Event('next'))">this is still in work</huh>
+</huh>
+
+<!-- the thing that is constantly above everything else -->
+<huh class="above">
+    <!-- <huh class="sheet above"></huh> -->
+</huh>
+
 
 
 <!-- SCRIPT -->
@@ -255,8 +287,93 @@ setTimeout(() => {
 }, 10);
 
 document.querySelectorAll('.line').forEach(el => el.addEventListener('click', function (e) {
-    
+    console.log(e.target)
 }))
+
+window.addEventListener('next', () => {document.querySelector('.above').classList.add('show'); setTimeout(revealStar, 300)})
+
+function revealStar() {
+    // the animation is easened
+    // a thin-lined crosshair like + appears, then its limbs start stretching to the edges of the screen and even furter 
+    // each going to the distance of the sum(screen width + screen height). during the prcess it may slightly rotate with transform: rotate
+    // then the crosshair stats to transform into star means curves like in this y= a * x^-1 and y2= a * -x^-1 graph but a starts from very low value like 0.001 and grows into 10-100
+    // that gives us this 'star getting closer' thing. all has to be done on canvas or svg, whatever i can put as the background to the <div>. Star color is always white
+    const sheet = document.querySelector('.above');
+    const canvas = document.createElement('canvas'); // its created, but have not been appended anywhere
+    const ctx = canvas.getContext('2d');
+
+
+    const durStretch = 500;
+    const durHold = 300
+    const durScale = 200
+
+    const w = canvas.width = window.innerWidth;
+    const h = canvas.height = window.innerHeight;
+    const cx = w / 2;
+    const cy = h / 2;
+    const maxDist = w + h;
+    let start = null;
+    const totalDuration = durStretch + durHold + durScale;
+
+    const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+    const easeInExpo = t => t === 0 ? 0 : Math.pow(2, 10 * t - 10);
+
+    function animate(time) {
+        if (!start) start = time;
+        const elapsed = time - start;
+
+        const pStretch = Math.min(Math.max(elapsed / durStretch, 0), 1);
+        const pHold = Math.min(Math.max((elapsed - durStretch) / durHold, 0), 1);
+        const pScale = Math.min(Math.max((elapsed - (durStretch + durHold)) / durScale, 0), 1);
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.save();
+        ctx.translate(cx, cy);
+        
+        const rotStretch = easeInOutCubic(pStretch) * (Math.PI / 2); 
+        const rotHold = easeOutCubic(pHold) * (Math.PI / 30);
+        ctx.rotate(rotStretch + rotHold);
+
+        const L = easeInOutCubic(pStretch) * maxDist;
+        const t = 1;
+        const aMax = Math.min(w, h) * 3
+        const a = t + easeInExpo(pScale) * (aMax - t);
+
+        ctx.beginPath();
+        ctx.moveTo(-t, -a);
+
+        ctx.lineTo(-t, -L);
+        ctx.lineTo(t, -L);
+        ctx.lineTo(t, -a);
+        ctx.quadraticCurveTo(t, -t, a, -t);
+
+        ctx.lineTo(L, -t);
+        ctx.lineTo(L, t);
+        ctx.lineTo(a, t);
+        ctx.quadraticCurveTo(t, t, t, a);
+
+        ctx.lineTo(t, L);
+        ctx.lineTo(-t, L);
+        ctx.lineTo(-t, a);
+        ctx.quadraticCurveTo(-t, t, -a, t);
+
+        ctx.lineTo(-L, t);
+        ctx.lineTo(-L, -t);
+        ctx.lineTo(-a, -t);
+        ctx.quadraticCurveTo(-t, -t, -t, -a)
+
+        ctx.closePath();
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.restore();
+
+        sheet.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        if (elapsed < totalDuration) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+}
+
 
 
 " id="script" tabindex="-1" data-focused=false>
