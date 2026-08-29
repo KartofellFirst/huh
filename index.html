@@ -44,6 +44,7 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
                 --selection-bg: #93032e;
                 --selection-color: #151515;
             }
+            .above { filter: invert(1); }
         }
 
         .safari-sample-top, .safari-sample-bottom { position: fixed; left: 0; width: 100%; height: 12px; background: var(--bg-color); pointer-events: none; z-index: 0; }
@@ -227,7 +228,30 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
             background-position: center;
         }
 
-        .above.show { pointer-events: all; opacity: 1;  }
+        .above.show { pointer-events: all; opacity: 1; }
+
+        .a-wrapper { 
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100dvh;
+            max-width: 100vw; max-height: 100dvh;
+            z-index: 100;
+            overflow: hidden;
+            opacity: 0.0001; 
+        }
+
+        .a-wrapper.show { transition: all 1s ease-in-out;; opacity: 1; }
+
+        .sun {
+            position: fixed;
+            width: 30vw;
+            height: 30vw;
+            right: 8vw; top: 5vh;
+            background: url('sun.gif');
+            background-size: contain;
+        }
+
+        .sun.slide-up { transition: all 2s ease-in-out; transform: translateY(-200%); }
     `); document.adoptedStyleSheets = [...document.adoptedStyleSheets, sss];" id="style" tabindex="-1">
     </huh>
 </huh>
@@ -273,7 +297,9 @@ if ((window.matchMedia('(pointer: coarse)').matches && screen.width < 768) && do
 
 <!-- the thing that is constantly above everything else -->
 <huh class="above">
-    <!-- <huh class="sheet above"></huh> -->
+    <huh class="a-wrapper">
+        <huh class="sun"></huh>
+    </huh>
 </huh>
 
 
@@ -297,21 +323,21 @@ function revealStar() {
     // a thin-lined crosshair like + appears, then its limbs start stretching to the edges of the screen and even furter 
     // each going to the distance of the sum(screen width + screen height). during the prcess it may slightly rotate with transform: rotate
     // then the crosshair stats to transform into star means curves like in this y= a * x^-1 and y2= a * -x^-1 graph but a starts from very low value like 0.001 and grows into 10-100
-    // that gives us this 'star getting closer' thing. all has to be done on canvas or svg, whatever i can put as the background to the <div>. Star color is always white
+    // that gives us this 'star getting closer' thing. all has done using canvas.
     const sheet = document.querySelector('.above');
-    const canvas = document.createElement('canvas'); // its created, but have not been appended anywhere
+    const canvas = document.createElement('canvas'); // its created, but have not been appended anywhere, means page still has only <huh> tags
     const ctx = canvas.getContext('2d');
 
 
-    const durStretch = 500;
-    const durHold = 300
-    const durScale = 200
+    const durStretch = 650;
+    const durHold = 400
+    const durScale = 250
 
     const w = canvas.width = window.innerWidth;
     const h = canvas.height = window.innerHeight;
     const cx = w / 2;
     const cy = h / 2;
-    const maxDist = w + h;
+    const maxDist = (w + h) * 2;
     let start = null;
     const totalDuration = durStretch + durHold + durScale;
 
@@ -331,14 +357,14 @@ function revealStar() {
         ctx.save();
         ctx.translate(cx, cy);
         
-        const rotStretch = easeInOutCubic(pStretch) * (Math.PI / 2); 
-        const rotHold = easeOutCubic(pHold) * (Math.PI / 30);
+        const rotStretch = easeInOutCubic(pStretch) * (Math.PI / 3); 
+        const rotHold = 0;//easeOutCubic(pHold) * (Math.PI / 30);
         ctx.rotate(rotStretch + rotHold);
 
         const L = easeInOutCubic(pStretch) * maxDist;
-        const t = 1;
-        const aMax = Math.min(w, h) * 3
-        const a = t + easeInExpo(pScale) * (aMax - t);
+        const t = 1; // half of the line width
+        const aMax = Math.min(w, h) * 10
+        const a = easeInExpo(pScale) * aMax;
 
         ctx.beginPath();
         ctx.moveTo(-t, -a);
@@ -370,11 +396,19 @@ function revealStar() {
 
         sheet.style.backgroundImage = `url(${canvas.toDataURL()})`;
         if (elapsed < totalDuration) requestAnimationFrame(animate);
+        if (pScale == 1) setTimeout(sunReveal, 500)
     }
     requestAnimationFrame(animate);
 }
 
+function sunReveal() {
+    document.querySelector('.a-wrapper').classList.add('show');
+    setTimeout(next1, 1300)
 
+    function next1() {
+        document.querySelector('.sun').classList.add('slide-up')
+    }
+}
 
 " id="script" tabindex="-1" data-focused=false>
 </huh>
